@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI StudyFlow Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">📚</div>
+      <div class="logo-text">AI Study<span>Flow</span></div>
+    </div>
+    <span class="nav-section">Main</span>
+    <button class="nav-item active" onclick="showPage('dashboard')">
+      <span class="nav-icon">🏠</span> Dashboard
+    </button>
+    <button class="nav-item" onclick="showPage('subjects')">
+      <span class="nav-icon">📖</span> My Subjects
+    </button>
+    <button class="nav-item" onclick="showPage('generate')">
+      <span class="nav-icon">⚡</span> Generate AI Plan
+    </button>
+    <span class="nav-section">Results</span>
+    <button class="nav-item" onclick="showPage('timetable')">
+      <span class="nav-icon">🗓️</span> Timetable
+    </button>
+    <button class="nav-item" onclick="showPage('calendar')">
+      <span class="nav-icon">📅</span> Calendar View
+    </button>
+    <button class="nav-item" onclick="showPage('progress')">
+      <span class="nav-icon">📊</span> Progress
+    </button>
+    <span class="nav-section">AI</span>
+    <button class="nav-item" onclick="showPage('ai')">
+      <span class="nav-icon">🤖</span> AI Study Advisor
+      <span style="margin-left:auto;font-size:10px;background:var(--accent);color:white;padding:2px 6px;border-radius:99px;font-weight:700">NEW</span>
+    </button>
+
+    <div style="margin-top:auto;padding:1rem 0.75rem 0;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--muted);line-height:1.8">
+        <div style="font-weight:600;color:var(--accent2);margin-bottom:4px">AI StudyFlow Planner</div>
+        <div>v2.0 · Powered by Claude AI</div>
+        <div style="margin-top:6px">
+          <a href="https://github.com" target="_blank" style="color:var(--muted);text-decoration:none;font-size:11px;display:flex;align-items:center;gap:4px;transition:color 0.15s" onmouseover="this.style.color='var(--accent2)'" onmouseout="this.style.color='var(--muted)'">
+            ⭐ Star on GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1>Dashboard <span style="font-size:13px;background:linear-gradient(135deg,var(--accent),var(--accent4));color:white;padding:3px 10px;border-radius:99px;font-weight:600;font-family:var(--font-body);vertical-align:middle;margin-left:6px">✦ AI Powered</span></h1>
+            <p>Your AI study overview at a glance</p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="showPage('ai')" style="display:flex;align-items:center;gap:6px">🤖 Ask AI Advisor</button>
+        </div>
+      </div>
+
+      <div class="grid-4 mb-6" id="stats-grid">
+        <div class="stat-card purple">
+          <div class="stat-label">Subjects</div>
+          <div class="stat-value" id="stat-subjects">0</div>
+          <div class="stat-sub">Added to planner</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Study Days</div>
+          <div class="stat-value" id="stat-days">0</div>
+          <div class="stat-sub">Until last exam</div>
+        </div>
+        <div class="stat-card pink">
+          <div class="stat-label">Hours/Day</div>
+          <div class="stat-value" id="stat-hours">0</div>
+          <div class="stat-sub">Available daily</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Progress</div>
+          <div class="stat-value" id="stat-progress">0%</div>
+          <div class="stat-sub">Topics completed</div>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-6">
+        <div class="card">
+          <div class="flex items-center justify-between mb-4">
+            <h2>Today's Study Plan</h2>
+            <span id="today-date" class="text-muted text-sm"></span>
+          </div>
+          <div id="today-plan">
+            <div class="empty-state">
+              <div class="empty-icon">⚡</div>
+              <p style="font-weight:600;margin-bottom:6px">No AI plan generated yet.</p>
+              <p class="text-sm">Add your subjects first, then go to<br><strong>Generate AI Plan</strong> to create your timetable.</p>
+              <button class="btn btn-primary btn-sm mt-4" onclick="showPage('subjects')">+ Add Subjects →</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="mb-4">Weekly Hours</h2>
+          <div class="chart-container">
+            <canvas id="weeklyChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="flex items-center justify-between mb-4">
+          <h2>Subject Priorities</h2>
+          <span class="text-muted text-sm">Based on difficulty & exam date</span>
+        </div>
+        <div id="priority-list">
+          <div class="empty-state">
+            <div class="empty-icon">🎯</div>
+            <p style="font-weight:600;margin-bottom:6px">No subjects added yet.</p>
+            <p class="text-sm">The AI will rank your subjects by difficulty and exam urgency once you add them.</p>
+            <button class="btn btn-primary btn-sm mt-4" onclick="showPage('subjects')">+ Add Subjects</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SUBJECTS ===== -->
+    <div id="page-subjects" class="page">
+      <div class="page-header flex items-center justify-between">
+        <div>
+          <h1>My Subjects</h1>
+          <p>Add and manage your subjects</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddSubject()">+ Add Subject</button>
+      </div>
+
+      <div class="alert alert-info mb-6">
+        💡 Add all subjects you need to study. Set the difficulty and exam date accurately — our AI uses this to calculate priority.
+      </div>
+
+      <div id="subjects-list">
+        <div class="empty-state">
+          <div class="empty-icon">📖</div>
+          <p>No subjects added yet.</p>
+          <button class="btn btn-primary mt-4" onclick="openAddSubject()">+ Add Your First Subject</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== GENERATE ===== -->
+    <div id="page-generate" class="page">
+      <div class="page-header">
+        <h1>Generate AI Study Plan</h1>
+        <p>Configure your preferences and let AI build your timetable</p>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="card mb-4">
+            <h2 class="mb-4">⚙️ Study Preferences</h2>
+            <div class="form-group">
+              <label>Daily Study Hours</label>
+              <input type="number" id="gen-hours" min="1" max="16" value="6" placeholder="e.g. 6">
+            </div>
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="date" id="gen-start">
+            </div>
+            <div class="form-group">
+              <label>Session Length (minutes)</label>
+              <select id="gen-session">
+                <option value="45">45 minutes</option>
+                <option value="60" selected>60 minutes (1 hr)</option>
+                <option value="90">90 minutes (1.5 hrs)</option>
+                <option value="120">120 minutes (2 hrs)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Include Revision Days?</label>
+              <select id="gen-revision">
+                <option value="yes" selected>Yes — add weekly revision day</option>
+                <option value="no">No — study every day</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="mb-4">🧠 AI Priority Settings</h2>
+            <div class="alert alert-info mb-4" style="font-size:13px">
+              The AI uses this formula:<br>
+              <strong>Priority = Difficulty × 3 + Urgency × 2 + Importance</strong>
+            </div>
+            <div class="form-group">
+              <label>Hard Subject Multiplier</label>
+              <input type="number" id="gen-hard-w" min="1" max="5" value="3">
+            </div>
+            <div class="form-group">
+              <label>Medium Subject Multiplier</label>
+              <input type="number" id="gen-med-w" min="1" max="5" value="2">
+            </div>
+            <div class="form-group">
+              <label>Easy Subject Multiplier</label>
+              <input type="number" id="gen-easy-w" min="1" max="5" value="1">
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card mb-4">
+            <h2 class="mb-4">📋 Subjects Preview</h2>
+            <div id="gen-subjects-preview">
+              <p class="text-muted text-sm">No subjects added yet. <button class="btn btn-sm btn-secondary" onclick="showPage('subjects')">Add Subjects →</button></p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="mb-4">🎯 How It Works</h2>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="flex gap-3 items-center">
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(124,106,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0">1</div>
+                <span class="text-sm">Calculates priority for each subject based on difficulty and exam date</span>
+              </div>
+              <div class="flex gap-3 items-center">
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(124,106,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0">2</div>
+                <span class="text-sm">Allocates time proportionally: harder subjects get more daily time</span>
+              </div>
+              <div class="flex gap-3 items-center">
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(124,106,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0">3</div>
+                <span class="text-sm">Creates daily schedule balancing all subjects without overload</span>
+              </div>
+              <div class="flex gap-3 items-center">
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(124,106,255,0.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0">4</div>
+                <span class="text-sm">Adds revision days before exams automatically</span>
+              </div>
+            </div>
+
+            <hr class="divider">
+
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.9rem" onclick="generatePlan()">
+              ⚡ Generate AI Study Plan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TIMETABLE ===== -->
+    <div id="page-timetable" class="page">
+      <div class="page-header flex items-center justify-between">
+        <div>
+          <h1>AI Study Timetable</h1>
+          <p>Your AI-generated daily schedule</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary" onclick="window.print()">🖨️ Print</button>
+          <button class="btn btn-secondary" onclick="exportTimetable()">⬇️ Export</button>
+        </div>
+      </div>
+
+      <div id="timetable-summary" style="display:none" class="mb-6">
+        <div class="grid-4">
+          <div class="card2">
+            <div class="text-muted text-sm mb-2">Total Days</div>
+            <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:800" id="tt-total-days">-</div>
+          </div>
+          <div class="card2">
+            <div class="text-muted text-sm mb-2">Total Hours</div>
+            <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:800" id="tt-total-hours">-</div>
+          </div>
+          <div class="card2">
+            <div class="text-muted text-sm mb-2">Subjects</div>
+            <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:800" id="tt-subjects">-</div>
+          </div>
+          <div class="card2">
+            <div class="text-muted text-sm mb-2">Revision Days</div>
+            <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:800" id="tt-revision">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="timetable-content">
+        <div class="empty-state">
+          <div class="empty-icon">🗓️</div>
+          <p style="font-weight:600;margin-bottom:6px">No AI timetable generated yet.</p>
+          <p class="text-sm">Go to <strong>Generate AI Plan</strong>, fill in your preferences, and click the generate button.</p>
+          <button class="btn btn-primary mt-4" onclick="showPage('generate')">⚡ Generate AI Plan →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CALENDAR ===== -->
+    <div id="page-calendar" class="page">
+      <div class="page-header flex items-center justify-between">
+        <div>
+          <h1>Calendar View</h1>
+          <p>Monthly overview of your study plan</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="prevMonth()">← Prev</button>
+          <span id="cal-month-label" style="font-family:var(--font-head);font-weight:700;padding:0.4rem 0.75rem;font-size:15px"></span>
+          <button class="btn btn-secondary btn-sm" onclick="nextMonth()">Next →</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="calendar-grid mb-2" id="cal-days-header"></div>
+        <div class="calendar-grid" id="calendar-grid"></div>
+      </div>
+      <div class="flex gap-3 mt-4" style="font-size:13px;color:var(--muted)">
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:rgba(124,106,255,0.3);display:inline-block"></span>Study day</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:rgba(248,113,113,0.3);display:inline-block"></span>Exam day</span>
+        <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;border:2px solid var(--accent);display:inline-block"></span>Today</span>
+      </div>
+    </div>
+
+    <!-- ===== PROGRESS ===== -->
+    <div id="page-progress" class="page">
+      <div class="page-header">
+        <h1>Progress Tracker</h1>
+        <p>Track completed topics and see your overall progress</p>
+      </div>
+
+      <div class="grid-2 mb-6">
+        <div class="card" style="text-align:center;padding:2rem">
+          <div style="display:flex;justify-content:center;margin-bottom:1rem">
+            <div class="progress-circle">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--card2)" stroke-width="10"/>
+                <circle id="progress-ring" cx="60" cy="60" r="50" fill="none" stroke="var(--accent)" stroke-width="10"
+                  stroke-linecap="round" stroke-dasharray="314.16" stroke-dashoffset="314.16"
+                  style="transition: stroke-dashoffset 0.8s ease"/>
+              </svg>
+              <div class="progress-circle-text"><span id="progress-pct">0%</span></div>
+            </div>
+          </div>
+          <h2>Overall Progress</h2>
+          <p class="text-muted text-sm mt-4" id="progress-summary">Complete topics to track progress</p>
+        </div>
+        <div class="card">
+          <h2 class="mb-4">Subject Progress</h2>
+          <div id="subject-progress-list">
+            <p class="text-muted text-sm">Add subjects and generate a plan first.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="mb-4">Topic Checklist</h2>
+        <div id="topic-checklist">
+          <div class="empty-state">
+            <div class="empty-icon">✅</div>
+            <p style="font-weight:600;margin-bottom:6px">No topics to track yet.</p>
+            <p class="text-sm">Add subjects with topic counts, generate a plan, then come back here to check off completed topics.</p>
+            <button class="btn btn-primary btn-sm mt-4" onclick="showPage('subjects')">+ Add Subjects</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== AI ADVISOR ===== -->
+    <div id="page-ai" class="page">
+      <div class="page-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1>🤖 AI Study Advisor</h1>
+            <p>Powered by Claude — your personal AI tutor that knows your subjects, schedule & progress</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="clearAiChat()">🗑️ Clear Chat</button>
+        </div>
+      </div>
+
+      <div class="alert alert-success mb-4" style="font-size:13px">
+        <strong>✦ Real Claude AI is active.</strong> This advisor reads your actual subjects, exam dates, and progress to give personalized advice — not generic tips. No API key is stored in frontend code (secure by design).
+      </div>
+
+      <div class="ai-chips" id="ai-chips">
+        <button class="ai-chip" onclick="askChip('Which subject should I focus on today?')">Which subject today?</button>
+        <button class="ai-chip" onclick="askChip('Am I on track to finish before my exams?')">Am I on track?</button>
+        <button class="ai-chip" onclick="askChip('Give me study tips for my hardest subject')">Tips for hard subject</button>
+        <button class="ai-chip" onclick="askChip('Create a revision strategy for my upcoming exams')">Revision strategy</button>
+        <button class="ai-chip" onclick="askChip('How many hours per day should I study for each subject?')">Hours per subject?</button>
+        <button class="ai-chip" onclick="askChip('I am feeling overwhelmed. What should I do?')">Feeling overwhelmed</button>
+        <button class="ai-chip" onclick="askChip('What are the best study techniques for memorization?')">Memory techniques</button>
+      </div>
+
+      <div class="ai-chat-wrap">
+        <div class="ai-messages" id="ai-messages">
+          <div class="ai-msg assistant">
+            <div class="ai-avatar bot">🤖</div>
+            <div class="ai-bubble">
+              <p>Hi! I'm your AI Study Advisor, powered by Claude.</p>
+              <p>I can see your subjects, exam dates, and progress. Ask me anything — like <strong>which subject to prioritize</strong>, <strong>how to improve your schedule</strong>, or <strong>study techniques for specific topics</strong>.</p>
+              <p>What would you like help with today?</p>
+            </div>
+          </div>
+        </div>
+        <div class="ai-input-row">
+          <input type="text" id="ai-input" placeholder="Ask your AI advisor anything..." onkeydown="if(event.key==='Enter')sendAiMessage()">
+          <button class="ai-send-btn" id="ai-send-btn" onclick="sendAiMessage()">Send ✦</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ADD SUBJECT MODAL -->
+<div class="modal-backdrop" id="modal-subject">
+  <div class="modal">
+    <div class="flex items-center justify-between mb-4">
+      <h2>Add Subject</h2>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Subject Name</label>
+      <input type="text" id="sub-name" placeholder="e.g. Mathematics, Physics, Java Programming...">
+    </div>
+    <div class="form-group">
+      <label>Difficulty Level</label>
+      <select id="sub-difficulty">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Exam Date</label>
+      <input type="date" id="sub-exam-date">
+    </div>
+    <div class="form-group">
+      <label>Total Topics / Chapters</label>
+      <input type="number" id="sub-topics" min="1" max="100" value="10" placeholder="e.g. 10">
+    </div>
+    <div class="flex gap-2" style="justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addSubject()">Add Subject</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">✅ <span id="toast-msg"></span></div>
+
+<script src="script.js"></script>
+</body>
+</html>
